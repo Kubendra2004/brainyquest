@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Game Recommendations for Kids</title>
+    <style>
+          body {
+            background: url('about.png') no-repeat center center fixed;
+            background-size: cover; /* Ensures the image covers the entire screen */
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh; /* Make sure the body takes full viewport height */
+        }
+        h1 {
+            color: #ff6347; /* Tomato color for the header */
+        }
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6f61;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+        form {
+            background-color: #ffe4e1; /* Misty Rose background for the form */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border: 2px solid #ff6347; /* Tomato border */
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        button {
+            background-color: #ff6347; /* Tomato button */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #ff4500; /* Darker tomato on hover */
+        }
+        .recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            width: 80%;
+            background-color: #e6e6fa; /* Lavender background for recommendations */
+        }
+        ul {
+            list-style-type: none; /* Remove default list style */
+            padding: 0;
+        }
+        li {
+            background-color: #98fb98; /* Pale Green for list items */
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 10px;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column; /* Stack image and text vertically */
+            align-items: center; /* Center align items */
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        li:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+        }
+        img {
+            width: 100px; /* Increased width for images */
+            height: auto; /* Maintain aspect ratio */
+            margin-bottom: 10px; /* Spacing between image and text */
+        }
+        a {
+            text-decoration: none; /* Remove underline from links */
+            color: #333; /* Dark text color for links */
+            font-weight: bold; /* Bold text for links */
+            font-size: 18px; /* Increase font size for links */
+        }
+        a:hover {
+            color: #ff6347; /* Change color on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Puzzle Games for Kids</h1>
+    <div id="timerDisplay">Time Remaining: 20:00</div>
+    <form id="ageForm">
+        <label for="age">Enter your child's age:</label><br>
+        <input type="number" id="age" name="age" min="3" max="10" required>
+        <br>
+        <button type="submit">Get Recommendations</button>
+    </form>
+    <div class="recommendations" id="recommendations"></div>
+
+    <script>
+        // Timer Variables
+        let timerDuration = 20 * 60; // 20 minutes in seconds
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function startTimer() {
+            // Check if there's a saved time in localStorage
+            const savedTime = localStorage.getItem('remainingTime');
+            if (savedTime) {
+                timerDuration = parseInt(savedTime);
+            }
+
+            const interval = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.innerText = "Time's up!";
+                    localStorage.removeItem('remainingTime'); // Clear saved time
+                    return;
+                }
+
+                timerDuration--;
+                localStorage.setItem('remainingTime', timerDuration); // Save remaining time
+
+                const minutes = Math.floor(timerDuration / 60);
+                const seconds = timerDuration % 60;
+                timerDisplay.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+
+        document.getElementById('ageForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const age = parseInt(document.getElementById('age').value);
+            let recommendations = '';
+
+            if (age >= 3 && age <= 6) {
+                recommendations = '<h2>Recommended Games:</h2><ul>' +
+                    '<li><img src="img/shape.jpg" width="100px" height="100px" alt="Shape Matching Game"> <a href="shape.html">Shape Matching Game</a></li>' +
+                    '<li><img src="img/memory.jpg" width="100px" height="100px" alt="Memory Card Game"> <a href="memory.html">Memory Card Game</a></li>' +
+                    '<li><img src="img/color.png" alt="Color by Number"> <a href="color.html">Color by Number</a></li>' +
+                    '</ul>';
+            } else if (age >= 6 && age <= 10) {
+                recommendations += '<h2>Recommended Games:</h2><ul>' +
+                    '<li><img src="img/jigsaw.jpg" width="100px" height="100px" alt="Jigsaw Puzzle"> <a href="jigsaw.html">Jigsaw Puzzle</a></li>' +
+                    '<li><img src="img/math.jpeg" width="100px" height="100px" alt="Word Search"> <a href="math.html">Math Adventure</a></li>' +
+                    '</ul>';
+            } else {
+                recommendations = '<h2>No recommendations available for this age.</h2>';
+            }
+
+            document.getElementById('recommendations').innerHTML = recommendations;
+        });
+
+        window.onload = () => {
+            startTimer(); // Start the timer when the page loads
+        };
+    </script>
+</body>
+</html>

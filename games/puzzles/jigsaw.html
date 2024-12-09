@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3x3 Jigsaw Puzzle Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: url('about.png') no-repeat center center fixed;
+            background-size: cover; /* Ensures the image covers the entire screen */
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Make sure the body takes full viewport height */
+            padding: 20px;
+        }
+
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6f61;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #image-selection {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .image-option {
+            margin: 0 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 5px;
+            transition: border 0.3s ease;
+        }
+
+        .image-option:hover {
+            border: 3px solid #20a6fa;
+        }
+
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 3px;
+            width: 306px; /* 300px for grid + 3 gaps of 2px */
+            height: 306px;
+            border: 2px solid #20a6fa;
+            background-color: white;
+            display: none; /* Initially hidden until an image is selected */
+        }
+
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            background-size: 300px 300px;
+            cursor: grab;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .puzzle-piece:active {
+            cursor: grabbing;
+        }
+
+        .piece-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 3px 6px;
+            border-radius: 5px;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        #completed-puzzle {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #20a6fa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #1a8cc0;
+        }
+    </style>
+</head>
+<body>
+    <div id="timerDisplay">Time Remaining: 20:00</div>
+    <div id="image-selection">
+        <img src="img/land1.jpeg" alt="Image 1" class="image-option" onclick="selectImage('img/land1.jpeg')" width="100">
+        <img src="img/land2.jpeg" alt="Image 2" class="image-option" onclick="selectImage('img/land2.jpeg')" width="100">
+        <img src="img/land3.jpeg" alt="Image 3" class="image-option" onclick="selectImage('img/land3.jpeg')" width="100">
+    </div>
+
+    <div id="puzzle-container" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <!-- Puzzle pieces will be dynamically generated here -->
+    </div>
+
+    <div id="completed-puzzle">
+        <h2>Congratulations! You completed the puzzle!</h2>
+        <img id="completed-image" alt="Completed Puzzle" width="300">
+        <div>
+            <button class="button" onclick="restartPuzzle()">Try Another Image</button>
+        </div>
+    </div>
+
+    <script>
+        // Timer Variables
+        let timerDuration = 20 * 60; // 20 minutes in seconds
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function startTimer() {
+            const savedTime = localStorage.getItem('remainingTime');
+            if (savedTime) {
+                timerDuration = parseInt(savedTime);
+            }
+
+            const interval = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.innerText = "Time's up!";
+                    localStorage.removeItem('remainingTime'); // Clear saved time
+                    return;
+                }
+
+                timerDuration--;
+                localStorage.setItem('remainingTime', timerDuration); // Save remaining time
+
+                const minutes = Math.floor(timerDuration / 60);
+                const seconds = timerDuration % 60;
+                timerDisplay.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const completedPuzzleDiv = document.getElementById('completed-puzzle');
+        const completedImage = document.getElementById('completed-image');
+        let selectedImage = '';
+
+        function selectImage(imagePath) {
+            selectedImage = imagePath;
+            completedImage.src = imagePath;
+            startPuzzle();
+        }
+
+        function startPuzzle() {
+            document.getElementById('image-selection').style.display = 'none';
+            puzzleContainer.style.display = 'grid';
+            puzzleContainer.innerHTML = '';
+            createPuzzlePieces();
+            startTimer(); // Start the timer when the puzzle starts
+        }
+
+        function createPuzzlePieces() {
+            const totalPieces = 9; // 3x3 grid
+            const pieceWidth = 100;
+            const pieceHeight = 100;
+
+            for (let i = 0; i < totalPieces; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.style.backgroundImage = `url(${selectedImage})`;
+                piece.style.backgroundPosition = `-${(i % 3) * pieceWidth}px -${Math.floor(i / 3) * pieceHeight}px`;
+                piece.draggable = true;
+                piece.id = `piece-${i}`;
+                piece.ondragstart = drag;
+                piece.innerHTML = `<div class="piece-number">${i + 1}</div>`;
+                puzzleContainer.appendChild(piece);
+            }
+
+            shufflePieces();
+        }
+
+        function shufflePieces() {
+            const pieces = Array.from(puzzleContainer.children);
+            pieces.sort(() => Math.random() - 0.5);
+            pieces.forEach(piece => puzzleContainer.appendChild(piece));
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const draggedPieceId = event.dataTransfer.getData('text');
+            const targetPiece = event.target.closest('.puzzle-piece');
+
+            if (targetPiece && draggedPieceId !== targetPiece.id) {
+                const draggedPiece = document.getElementById(draggedPieceId);
+                puzzleContainer.insertBefore(draggedPiece, targetPiece);
+                checkCompletion();
+            }
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData('text', event.target.id);
+        }
+
+        function checkCompletion() {
+            const pieces = Array.from(puzzleContainer.children);
+            const isComplete = pieces.every((piece, index) => piece.id === `piece-${index}`);
+
+            if (isComplete) {
+                completedPuzzleDiv.style.display = 'block';
+                localStorage.removeItem('remainingTime'); // Clear saved time on completion
+            }
+        }
+
+        function restartPuzzle() {
+            completedPuzzleDiv.style.display = 'none';
+            document.getElementById('image-selection').style.display = 'flex';
+            localStorage.removeItem('remainingTime'); // Clear saved time on restart
+        }
+
+        // Initialize the game
+        createPuzzle();
+    </script>
+</body>
+</html>

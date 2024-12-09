@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color by Number Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: url('about.png') no-repeat center center fixed;
+            background-size: cover; /* Ensures the image covers the entire screen */
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh; /* Make sure the body takes full viewport height */
+        }
+
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6f61;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            width: 300px;
+        }
+
+        .color-palette {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #000;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .color-box:hover {
+            opacity: 0.8;
+        }
+
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            grid-template-rows: repeat(4, 80px);
+            gap: 2px;
+            border: 4px solid #20a6fa;
+            background-color: #fff;
+            margin: 20px 0;
+            padding: 10px;
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ddd;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            transition: background-color 0.3s;
+        }
+
+        .cell span {
+            display: block;
+        }
+
+        .cell.colored {
+            cursor: default;
+            border-color: #20a6fa;
+        }
+
+        .cell.colored span {
+            display: none;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        .button {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #20a6fa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #1a8cc0;
+        }
+
+        .message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #20a6fa;
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="timerDisplay">Time Remaining: 20:00</div>
+    <div class="instructions">Click on a number to color the corresponding parts of the image.</div>
+    <div class="color-palette" id="color-palette"></div>
+    <div id="puzzle-container"></div>
+    <div class="button-container">
+        <button class="button" onclick="restartGame()">Restart</button>
+    </div>
+
+    <div class="message" id="completion-message">Congratulations! You completed the puzzle!</div>
+
+    <script>
+        // Timer Variables
+        let timerDuration = 20 * 60; // 20 minutes in seconds
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function startTimer() {
+            // Check if there's a saved time in localStorage
+            const savedTime = localStorage.getItem('remainingTime');
+            if (savedTime) {
+                timerDuration = parseInt(savedTime);
+            }
+
+            const interval = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.innerText = "Time's up!";
+                    localStorage.removeItem('remainingTime'); // Clear saved time
+                    return;
+                }
+
+                timerDuration--;
+                localStorage.setItem('remainingTime', timerDuration); // Save remaining time
+
+                const minutes = Math.floor(timerDuration / 60);
+                const seconds = timerDuration % 60;
+                timerDisplay.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+
+        const colorPalette = document.getElementById('color-palette');
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const completionMessage = document.getElementById('completion-message');
+
+        let selectedColor = '';
+        const colors = ['brown', 'orange', 'blue', 'peach'];
+        const numberMap = {
+            1: 'brown',
+            2: 'orange',
+            3: 'blue',
+            4: 'peach'
+        };
+
+        function selectColor(color) {
+            selectedColor = color;
+            document.querySelectorAll('.color-box').forEach(box => {
+                box.style.border = '2px solid #000';
+            });
+            document.querySelector(`.color-box[style*="background-color: ${color}"]`).style.border = '2px solid #20a6fa';
+        }
+
+        function generateRandomPattern() {
+            let cells = [];
+            for (let i = 1; i <= 16; i++) {
+                let randomNumber = Math.floor(Math.random() * 4) + 1; // Random number between 1 and 4
+                cells.push({ number: randomNumber, color: numberMap[randomNumber] });
+            }
+            return cells;
+        }
+
+        function createPuzzle() {
+            const cells = generateRandomPattern();
+            colorPalette.innerHTML = '';
+            colors.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.classList.add('color-box');
+                colorBox.style.backgroundColor = color;
+                colorBox.textContent = color[0].toUpperCase();
+                colorBox.onclick = () => selectColor(color);
+                colorPalette.appendChild(colorBox);
+            });
+
+            puzzleContainer.innerHTML = '';
+            cells.forEach((cell, index) => {
+                const div = document.createElement('div');
+                div.classList.add('cell');
+                div.innerHTML = `<span>${cell.number}</span>`;
+                div.setAttribute('data-number', cell.number);
+                div.style.backgroundColor = '#f9f9f9';
+                div.addEventListener('click', () => colorCell(div, cell.color));
+                puzzleContainer.appendChild(div);
+            });
+        }
+
+        function colorCell(cell, color) {
+            if (selectedColor === color && !cell.classList.contains('colored')) {
+                cell.style.backgroundColor = selectedColor;
+                cell.classList.add('colored');
+                cell.classList.add('correct');
+                checkCompletion();
+            } else {
+                alert('Try again! Make sure you selected the right color.');
+            }
+        }
+
+        function checkCompletion() {
+            const cells = document.querySelectorAll('.cell');
+            const allColored = Array.from(cells).every(cell => cell.classList.contains('colored'));
+
+            if (allColored) {
+                completionMessage.style.display = 'block';
+            }
+        }
+
+        function restartGame() {
+            completionMessage.style.display = 'none';
+            createPuzzle();
+        }
+
+        // Initialize the game and start the timer
+        createPuzzle();
+        startTimer();
+    </script>
+</body>
+</html>

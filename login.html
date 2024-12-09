@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - BrainlyQuest</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background: url('login.jpg') no-repeat center center fixed; /* Full-body background image */
+            background-size: cover;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: none; /* No background color */
+            box-shadow: none; /* Remove shadow */
+            position: absolute; /* Make nav fixed at the top */
+            top: 0;
+            width: 100%;
+            z-index: 10; /* Ensures it stays on top of other content */
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white; /* White text color for logo and text */
+        }
+
+        .logo img {
+            height: 50px;
+            width: 50px;
+        }
+
+        .nav-links {
+            color: white;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6C63FF; /* White color for the home link */
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 7% auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #6C63FF;
+            outline: none;
+        }
+
+        .cta-button {
+            background-color: #6C63FF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #5a54d1;
+        }
+
+        .toggle-form, .guest-option {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .guest-option a {
+            color: #6C63FF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .message {
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="brain.png" alt="Logo">
+            <span>BrainlyQuest</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+        </div>
+    </nav>
+
+    <div class="login-container">
+        <div id="loginForm" class="form-section active">
+            <h2>Login</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="cta-button">Login</button>
+            </form>
+            <div class="toggle-form">
+                <p>Don't have an account? <a href="#" onclick="toggleForms()">Sign Up</a></p>
+            </div>
+            <div id="loginMessage" class="message"></div>
+        </div>
+
+        <div id="signupForm" class="form-section" style="display: none;">
+            <h2>Sign Up</h2>
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupAge">Age</label>
+                    <input type="number" id="signupAge" required>
+                </div>
+                <button type="submit" class="cta-button">Sign Up</button>
+            </form>
+            <div class="toggle-form">
+                <p>Already have an account? <a href="#" onclick="toggleForms()">Login</a></p>
+            </div>
+            <div id="signupMessage" class="message"></div>
+        </div>
+
+        <div class="guest-option">
+            <p><a href="game.html">Continue as Guest</a></p>
+        </div>
+    </div>
+
+    <script>
+        function toggleForms() {
+            document.getElementById('loginForm').classList.toggle('active');
+            document.getElementById('signupForm').classList.toggle('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            const user = users.find(user => user.email === email && user.password === password);
+            const message = document.getElementById('loginMessage');
+
+            if (user) {
+                message.style.color = 'green';
+                message.textContent = 'Login successful! Redirecting...';
+                setTimeout(() => window.location.href = 'game.html', 2000);
+            } else {
+                message.style.color = 'red';
+                message.textContent = 'Invalid email or password.';
+            }
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const age = document.getElementById('signupAge').value;
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            if (users.some(user => user.email === email)) {
+                const message = document.getElementById('signupMessage');
+                message.style.color = 'red';
+                message.textContent = 'Email already exists. Please use a different email.';
+                return;
+            }
+
+            users.push({ name, email, password, age });
+            localStorage.setItem('users', JSON.stringify(users));
+
+            const message = document.getElementById('signupMessage');
+            message.style.color = 'green';
+            message.textContent = 'Sign up successful! You can now log in.';
+            toggleForms();
+        }
+    </script>
+</body>
+</html>

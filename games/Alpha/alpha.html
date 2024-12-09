@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Learning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            background: url('login.jpg') no-repeat center center;
+             /* Add the path to your image */
+            background-size: cover; /* Ensure the image covers the entire page */
+            background-position: center center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent image from repeating */
+        }
+
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6f61;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #letterButtons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .letterButton {
+            margin: 15px;
+            padding: 20px;
+            font-size: 36px; /* Increased font size */
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px; /* Increased border radius */
+            position: relative;
+            width: 100px; /* Set a fixed width */
+        }
+
+        h1 {
+            font-family: 'Cosmic Sans MS', cursive, sans-serif;
+            color: #FF6F61;
+            font-size: 42px;
+        }
+
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px; /* Increased padding */
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center align text */
+        }
+
+        .tooltip-image {
+            width: 150px; /* Increased image size */
+            height: auto;
+        }
+
+        .exampleText {
+            font-family: Arial, Helvetica, sans-serif;
+            color: black;
+            margin-top: 10px; /* Increased margin */
+            font-weight: bold;
+            font-size: 24px; /* Increased font size */
+        }
+
+        #testContainer {
+            margin-top: 20px;
+        }
+
+        .testButton {
+            margin: 15px;
+            padding: 20px;
+            font-size: 28px; /* Increased font size */
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px; /* Increased border radius */
+        }
+    </style>
+</head>
+<body>
+    <h1>Learn the Alphabet</h1>
+    <div id="timerDisplay">Time Remaining: 20:00</div>
+    <div id="letterButtons"></div>
+    <div id="testContainer"></div>
+
+    <script>
+        // Timer Variables
+        let timerDuration = 20 * 60; // 20 minutes in seconds
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function startTimer() {
+            // Check if there's a saved time in localStorage
+            const savedTime = localStorage.getItem('remainingTime');
+            if (savedTime) {
+                timerDuration = parseInt(savedTime);
+            }
+
+            const interval = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.innerText = "Time's up!";
+                    localStorage.removeItem('remainingTime'); // Clear saved time
+                    return;
+                }
+
+                timerDuration--;
+                localStorage.setItem('remainingTime', timerDuration); // Save remaining time
+
+                const minutes = Math.floor(timerDuration / 60);
+                const seconds = timerDuration % 60;
+                timerDisplay.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+
+        // Alphabet Learning Functionality
+        const letters = [
+            { letter: 'A', example: 'Apple', image: 'img/apple.jpeg' },
+            { letter: 'B', example: 'Ball', image: 'img/ball.jpg' },
+            { letter: 'C', example: 'Cat', image: 'img/cat.jpg' },
+            { letter: 'D', example: 'Dog', image: ' dog.jpg' },
+            { letter: 'E', example: 'Elephant', image: 'img/elephant.png' },
+            { letter: 'F', example: 'Fish', image: 'img/fish.jpeg' },
+            { letter: 'G', example: 'Giraffe', image: 'img/giraffe.png' },
+            { letter: 'H', example: 'Hat', image: 'img/hat.jpeg' },
+            { letter: 'I', example: 'Ice cream', image: 'img/ice.jpeg' },
+            { letter: 'J', example: 'Jam', image: 'img/jam.jpeg' },
+            { letter: 'K', example: 'Kite', image: 'img/kite.jpg' },
+            { letter: 'L', example: 'Lion', image: 'img/lion.jpeg' },
+            { letter: 'M', example: 'Monkey', image: 'img/monkey.jpeg' },
+            { letter: 'N', example: 'Nest', image: 'img/nest.jpeg' },
+            { letter: 'O', example: 'Orange', image: 'img/orange.jpeg' },
+            { letter: 'P', example: 'Penguin', image: 'img/penguin.jpeg' },
+            { letter: 'Q', example: 'Queen', image: 'img/queen.jpeg' },
+            { letter: 'R', example: 'Rabbit', image: 'img/rabbit.jpeg' },
+            { letter: 'S', example: 'Sun', image: 'img/sun.jpeg' },
+            { letter: 'T', example: 'Tiger', image: 'img/tiger.jpeg' },
+            { letter: 'U', example: 'Umbrella', image: 'img/umbrella.jpeg' },
+            { letter: 'V', example: 'Violin', image: 'img/violin.jpeg' },
+            { letter: 'W', example: 'Whale', image: 'img/whale.jpeg' },
+            { letter: 'X', example: 'Xylophone', image: 'img/xylophone.jpeg' },
+            { letter: 'Y', example: 'Yacht', image: 'img/yacht.jpeg' },
+            { letter: 'Z', example: 'Zebra', image: 'img/zebra.jpeg' }
+        ];
+
+        function speak(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(speech);
+        }
+
+        function displayLearning() {
+            const letterButtonsContainer = document.getElementById('letterButtons');
+            letterButtonsContainer.innerHTML = ''; // Clear previous buttons
+
+            letters.forEach((currentLetter) => {
+                const button = document.createElement('button');
+                button.className = 'letterButton';
+                button.innerText = currentLetter.letter;
+                button.setAttribute('aria-label', `${currentLetter.letter} for ${currentLetter.example}`); // Accessibility
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+
+                const img = document.createElement('img');
+                img.src = currentLetter.image;
+                img.alt = 'Example image';
+                img.className = 'tooltip-image';
+
+                const exampleElement = document.createElement('div');
+                exampleElement.className = 'exampleText';
+                exampleElement.innerText = currentLetter.example;
+
+                // Append the image and example text to the tooltip
+                tooltip.appendChild(img);
+                tooltip.appendChild(exampleElement);
+                button.appendChild(tooltip);
+
+                // Show tooltip on mouse enter
+                button.onmouseenter = () => {
+                    tooltip.style.display = 'block'; // Show the tooltip
+                    tooltip.style.opacity = '1'; // Fade in
+                };
+
+                // Hide tooltip on mouse leave
+                button.onmouseleave = () => {
+                    tooltip.style.display = 'none'; // Hide the tooltip
+                    tooltip.style.opacity = '0'; // Fade out
+                };
+
+                // Handle click event
+                button.onclick = () => {
+                    speak(`${currentLetter.letter} for ${currentLetter.example}`);
+                };
+
+                letterButtonsContainer.appendChild(button);
+            });
+        }
+
+        window.onload = () => {
+            displayLearning();
+            startTimer(); // Start the timer when the page loads
+        };
+    </script>
+</body>
+</html>

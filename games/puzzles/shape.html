@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Matching Game</title>
+    <style>
+          body {
+            background: url('about.png') no-repeat center center fixed;
+            background-size: cover; /* Ensures the image covers the entire screen */
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh; /* Make sure the body takes full viewport height */
+        }
+        h1 {
+            color: #ff6347;
+        }
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6347;
+            margin-bottom: 20px;
+        }
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .shape {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .shape:hover {
+            transform: scale(1.05);
+        }
+        .circle {
+            background-color: red;
+            border-radius: 50%;
+        }
+        .square {
+            background-color: blue;
+        }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 100px solid green;
+            background-color: transparent;
+        }
+        .message {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #333;
+        }
+        .reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .reset-button:hover {
+            background-color: #ff4500;
+        }
+    </style>
+</head>
+<body>
+    <h1>Shape Matching Game!</h1>
+    <div id="timerDisplay">Time Remaining: 20:00</div>
+    <div class="game-container" id="gameContainer"></div>
+    <div class="message" id="message"></div>
+    <button class="reset-button" id="resetButton" style="display:none;">Play Again</button>
+
+    <script>
+        // Timer Variables
+        let timerDuration = 20 * 60; // 20 minutes in seconds
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function startTimer() {
+            const savedTime = localStorage.getItem('remainingTime');
+            if (savedTime) {
+                timerDuration = parseInt(savedTime);
+            }
+
+            const interval = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.innerText = "Time's up!";
+                    document.getElementById("message").innerText = "Game Over! 😢";
+                    document.getElementById("resetButton").style.display = "block"; // Show reset button
+                    localStorage.removeItem('remainingTime'); // Clear saved time
+                    return;
+                }
+
+                timerDuration--;
+                localStorage.setItem('remainingTime', timerDuration); // Save remaining time
+
+                const minutes = Math.floor(timerDuration / 60);
+                const seconds = timerDuration % 60;
+                timerDisplay.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+
+        const shapes = [
+            { name: "Circle", class: "circle" },
+            { name: "Square", class: "square" },
+            { name: "Triangle", class: "triangle" },
+            { name: "Circle", class: "circle" },
+            { name: "Square", class: "square" },
+            { name: "Triangle", class: "triangle" },
+        ];
+
+        let firstShape = null;
+        let secondShape = null;
+        let matchCount = 0;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createShapes() {
+            const container = document.getElementById("gameContainer");
+            const shuffledShapes = shuffle(shapes);
+
+            shuffledShapes.forEach(shape => {
+                const shapeDiv = document.createElement("div");
+                shapeDiv.className = `shape ${shape.class}`;
+                shapeDiv.setAttribute("data-name", shape.name);
+                shapeDiv.addEventListener("click", handleShapeClick);
+                container.appendChild(shapeDiv);
+            });
+        }
+
+        function handleShapeClick(event) {
+            const selectedShape = event.target;
+            if (firstShape === null) {
+                firstShape = selectedShape;
+                firstShape.style.pointerEvents = "none"; // Disable further clicks
+            } else if (secondShape === null && selectedShape !== firstShape) {
+                secondShape = selectedShape;
+                secondShape.style.pointerEvents = "none"; // Disable further clicks
+
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const firstName = firstShape.getAttribute("data-name");
+            const secondName = secondShape.getAttribute("data-name");
+
+            if (firstName === secondName) {
+                matchCount++;
+                document.getElementById("message").innerText = "It's a match! " + secondName + " 🎉 ";
+                resetShapes();
+            } else {
+                document.getElementById("message").innerText = "Try again! 😢";
+                setTimeout(() => {
+                    firstShape.style.pointerEvents = "auto"; // Re-enable clicks
+                    secondShape.style.pointerEvents = "auto"; // Re-enable clicks
+                    firstShape = null;
+                    secondShape = null;
+                }, 1000);
+            }
+
+            if (matchCount === shapes.length / 2) {
+                document.getElementById("message").innerText = "Congratulations! You've matched all shapes! 🎉";
+                document.getElementById("resetButton").style.display = "block"; // Show reset button
+                localStorage.removeItem('remainingTime'); // Clear saved time on completion
+            }
+        }
+
+        function resetShapes() {
+            firstShape = null;
+            secondShape = null;
+        }
+
+        document.getElementById("resetButton").addEventListener("click", () => {
+            matchCount = 0;
+            document.getElementById("message").innerText = "";
+            document.getElementById("resetButton").style.display = "none";
+            document.getElementById("gameContainer").innerHTML = ""; // Clear previous shapes
+            createShapes(); // Create new shapes
+            timerDuration = 20 * 60; // Reset timer
+            startTimer(); // Restart the timer
+        });
+
+        createShapes(); // Initialize the game
+        startTimer(); // Start the timer when the game loads
+    </script>
+</body>
+</html>

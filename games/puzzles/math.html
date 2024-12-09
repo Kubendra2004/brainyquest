@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Adventure Game</title>
+    <style>
+        body {
+            background: url('about.png') no-repeat center center fixed;
+            background-size: cover; /* Ensures the image covers the entire screen */
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh; /* Make sure the body takes full viewport height */
+        }
+        h1 {
+            color: #ff6347;
+        }
+        #timerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6f61;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+        #gameContainer {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            max-width: 400px;
+        }
+        #question {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #ff6347;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #ff6347;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #e91e63;
+        }
+        #result {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Math Adventure Game</h1>
+    <div id="timerDisplay">Time Remaining: 20:00</div>
+    <div id="gameContainer">
+        <div id="question">What is 2 + 2?</div>
+        <input type="number" id="answer" placeholder="Your answer" />
+        <button id="submitBtn">Submit</button>
+        <div id="result"></div>
+        <button id="nextBtn" style="display:none;">Next Question</button>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let score = 0;
+        const questions = [
+            { question: "What is 2 + 2?", answer: 4 },
+            { question: "What is 5 - 3?", answer: 2 },
+            { question: "What is 3 x 3?", answer: 9 },
+            { question: "What is 10 / 2?", answer: 5 },
+            { question: "What is 7 + 5?", answer: 12 },
+            { question: "What is 6 - 4?", answer: 2 },
+            { question: "What is 8 x 1?", answer: 8 },
+            { question: "What is 9 / 3?", answer: 3 }
+        ];
+
+        let timerDuration = 5 * 60; // 5 minutes in seconds
+        const timerDisplay = document.getElementById('timerDisplay');
+        let timerInterval;
+
+        // Load remaining time from localStorage
+        function loadTimer() {
+            const savedTime = localStorage.getItem('remainingTime');
+            if (savedTime) {
+                timerDuration = parseInt(savedTime);
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time's up! Game Over!");
+                    document.getElementById('gameContainer').innerHTML = `<h2>Game Over! Your score is ${score} out of ${questions.length}!</h2><button onclick="restartGame()">Play Again</button>`;
+                    return;
+                }
+
+                timerDuration--;
+                localStorage.setItem('remainingTime', timerDuration); // Save remaining time
+
+                const minutes = Math.floor(timerDuration / 60);
+                const seconds = timerDuration % 60;
+                timerDisplay.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            document.getElementById('question').innerText = currentQuestion.question;
+            document.getElementById('answer').value = ''; 
+            document.getElementById('result').innerText = '';
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const answer = parseInt(document.getElementById('answer').value);
+            const currentQuestion = questions[currentQuestionIndex];
+
+            if (answer === currentQuestion.answer) {
+                score++;
+                document.getElementById('result').innerText = "Correct!";
+            } else {
+                document.getElementById('result').innerText = "Wrong! The correct answer is " + currentQuestion.answer;
+            }
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById('nextBtn').style.display = 'block';
+            } else {
+                clearInterval(timerInterval);
+                alert("You've completed the game! Your score is " + score + " out of " + questions.length);
+                document.getElementById('gameContainer').innerHTML = `<h2>Game Over! Your score is ${score} out of ${questions.length}!</h2><button onclick="restartGame()">Play Again</button>`;
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', loadQuestion);
+
+        function restartGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            timerDuration = 5 * 60; // Reset timer to 5 minutes
+            localStorage.removeItem('remainingTime'); // Clear saved time
+            loadTimer(); // Load remaining time
+            startTimer(); // Start the timer
+            loadQuestion(); // Load the first question
+            document.getElementById('gameContainer').innerHTML = `
+                <div id="question">What is 2 + 2?</div>
+                <input type="number" id="answer" placeholder="Your answer" />
+                <button id="submitBtn">Submit</button>
+                <div id="result"></div>
+                <button id="nextBtn" style="display:none;">Next Question</button>
+            `;
+        }
+
+        window.onload = () => {
+            loadTimer(); // Load timer when the page loads
+            startTimer(); // Start the timer
+            loadQuestion(); // Load the first question
+        };
+    </script>
+</body>
+</html>
